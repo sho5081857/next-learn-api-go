@@ -1,0 +1,5 @@
+_command
+_tools/backup/*
+.env
+.vscode
+.DS_Store
