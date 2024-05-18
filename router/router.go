@@ -16,7 +16,7 @@ func NewRouter(
 	ic controller.IInvoiceController,
 	rc controller.IRevenueController,
 	cc controller.ICustomerController,
-	) *echo.Echo {
+) *echo.Echo {
 	e := echo.New()
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
 		AllowOrigins: []string{"http://localhost:3000", os.Getenv("FE_URL")},
@@ -30,9 +30,9 @@ func NewRouter(
 		SigningKey: []byte(os.Getenv("SECRET")),
 	})
 
-	e.GET("/health", func(c echo.Context) error {
-        return c.String(http.StatusOK, "OK")
-    })
+	e.GET("/", func(c echo.Context) error {
+		return c.String(http.StatusOK, "OK")
+	})
 
 	e.POST("/signup", uc.SignUp)
 	e.POST("/login", uc.LogIn)
