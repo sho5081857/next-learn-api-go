@@ -14,11 +14,12 @@ import (
 
 func NewDB() *bun.DB {
 
-	err := godotenv.Load()
-	if err != nil {
-		log.Fatalln(err)
+	if os.Getenv("GO_ENV") != "prod" {
+		err := godotenv.Load()
+		if err != nil {
+			log.Fatalln(err)
+		}
 	}
-
 	url := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=disable", os.Getenv("DB_USERNAME"),
 		os.Getenv("DB_PASSWORD"), os.Getenv("DB_HOST"), os.Getenv("DB_PUBLISHED_PORT"), os.Getenv("DB_DATABASE"))
 
