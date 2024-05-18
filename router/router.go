@@ -1,6 +1,7 @@
 package router
 
 import (
+	"net/http"
 	"next-learn-go/controller"
 
 	"os"
@@ -28,6 +29,10 @@ func NewRouter(
 	jwtMiddleware := echojwt.WithConfig(echojwt.Config{
 		SigningKey: []byte(os.Getenv("SECRET")),
 	})
+
+	e.GET("/health", func(c echo.Context) error {
+        return c.String(http.StatusOK, "OK")
+    })
 
 	e.POST("/signup", uc.SignUp)
 	e.POST("/login", uc.LogIn)
