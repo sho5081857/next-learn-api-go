@@ -3,7 +3,6 @@ package db
 import (
 	"database/sql"
 	"fmt"
-	"io"
 	"log"
 	"os"
 
@@ -30,26 +29,10 @@ func NewDB() *bun.DB {
 	}
 
 	db := bun.NewDB(sqlDB, pgdialect.New())
-
-	// SQLファイルを開く
-	file, err := os.Open("_tools/first.sql")
+	err = db.Ping()
 	if err != nil {
-		log.Fatal(err)
+		log.Println("Failed to connect to the database:", err)
 	}
-	defer file.Close()
-
-	// SQLファイルの内容を読み込む
-	content, err := io.ReadAll(file)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	// SQLファイルの内容をクエリとして実行
-	_, err = db.Exec(string(content))
-	if err != nil {
-		log.Fatal(err)
-	}
-
 	fmt.Println("Connected")
 	return db
 }
