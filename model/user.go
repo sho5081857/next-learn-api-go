@@ -14,7 +14,6 @@ type User struct {
 	Password string    `json:"password" bun:",notnull,type:varchar(255)"`
 }
 
-// signUpで返すユーザーレスポンス
 type UserResponse struct {
 	ID       uuid.UUID `json:"id"`
 	Name     string    `json:"name"`
@@ -26,4 +25,14 @@ type LoginResponse struct {
 	ID          uuid.UUID `json:"id"`
 	Email       string    `json:"email"`
 	AccessToken string    `json:"access_token"`
+	RefreshToken string    `json:"refresh_token"`
+}
+
+type TokenResponse struct {
+	AccessToken string `json:"access_token"`
+	RefreshToken string `json:"refresh_token"`
+}
+
+type VerifyTokenResponse struct {
+	Valid bool `json:"valid"`
 }

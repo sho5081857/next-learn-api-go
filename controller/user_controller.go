@@ -5,7 +5,6 @@ import (
 	"next-learn-go/model"
 	"next-learn-go/usecase"
 
-
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/labstack/echo/v4"
 )
@@ -15,6 +14,7 @@ type IUserController interface {
 	LogIn(c echo.Context) error
 	GetUserById(c echo.Context) error
 	GetUserByEmail(c echo.Context) error
+	RefreshToken(c echo.Context) error
 }
 
 type userController struct {
@@ -71,4 +71,20 @@ func (uc *userController) GetUserByEmail(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, err.Error())
 	}
 	return c.JSON(http.StatusOK, userRes)
+}
+
+func (uc *userController) RefreshToken(c echo.Context) error {
+	var body struct {
+		RefreshToken string `json:"refresh_token"`
+	}
+	if err := c.Bind(&body); err != nil {
+		return c.JSON(http.StatusBadRequest, err.Error())
+	}
+
+	tokens, err := uc.uu.RefreshToken(body.RefreshToken)
+	if err != nil {
+		return c.JSON(http.StatusUnauthorized, err.Error())
+	}
+
+	return c.JSON(http.StatusOK, tokens)
 }

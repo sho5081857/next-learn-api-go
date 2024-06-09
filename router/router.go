@@ -37,6 +37,16 @@ func NewRouter(
 	e.POST("/signup", uc.SignUp)
 	e.POST("/login", uc.LogIn)
 
+	tv := e.Group("/token/verify")
+	tv.Use(jwtMiddleware)
+	tv.POST("", func(c echo.Context) error {
+		return c.JSON(http.StatusOK, "OK")
+	})
+
+	tr := e.Group("/token/refresh")
+	tr.POST("", uc.RefreshToken)
+
+
 	i := e.Group("/invoices")
 	i.Use(jwtMiddleware)
 	i.GET("/latest", ic.GetLatestInvoices)

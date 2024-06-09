@@ -19,6 +19,7 @@ type IUserUsecase interface {
 	Login(user model.User) (model.LoginResponse, error)
 	GetUserById(userId uint) (model.UserResponse, error)
 	GetUserByEmail(email string) (model.UserResponse, error)
+	RefreshToken(refreshTokenString string) (model.TokenResponse, error)
 }
 
 type userUsecase struct {
@@ -80,10 +81,22 @@ func (uu *userUsecase) Login(user model.User) (model.LoginResponse, error) {
 	if err != nil {
 		return model.LoginResponse{}, err
 	}
+
+	refreshToken := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"user_id": storedUser.ID,
+		"exp":     time.Now().Add(time.Hour * 24 * 7).Unix(),
+	})
+
+	refreshTokenString, err := refreshToken.SignedString([]byte(os.Getenv("SECRET")))
+	if err != nil {
+		return model.LoginResponse{}, err
+	}
+
 	resLogin := model.LoginResponse{
-		ID:          storedUser.ID,
-		Email:       storedUser.Email,
-		AccessToken: tokenString,
+		ID:           storedUser.ID,
+		Email:        storedUser.Email,
+		AccessToken:  tokenString,
+		RefreshToken: refreshTokenString,
 	}
 	return resLogin, nil
 }
@@ -116,4 +129,34 @@ func (uu *userUsecase) GetUserByEmail(email string) (model.UserResponse, error) 
 		Password: user.Password,
 	}
 	return resUser, nil
+}
+
+func (uu *userUsecase) RefreshToken(refreshTokenString string) (model.TokenResponse, error) {
+
+	token, err := jwt.Parse(refreshTokenString, func(token *jwt.Token) (any, error) {
+		return []byte(os.Getenv("SECRET")), nil
+	})
+	if err != nil {
+		return model.TokenResponse{}, err
+	}
+
+	claims, ok := token.Claims.(jwt.MapClaims)
+	if !ok || !token.Valid {
+		return model.TokenResponse{}, errors.New("invalid refresh token")
+	}
+
+	newToken := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"user_id": claims["user_id"],
+		"exp":     time.Now().Add(time.Hour * 12).Unix(),
+	})
+
+	newTokenString, err := newToken.SignedString([]byte(os.Getenv("SECRET")))
+	if err != nil {
+		return model.TokenResponse{}, err
+	}
+
+	return model.TokenResponse{
+		AccessToken:  newTokenString,
+		RefreshToken: refreshTokenString,
+	}, nil
 }
