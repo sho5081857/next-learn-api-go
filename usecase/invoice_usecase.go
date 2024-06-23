@@ -134,7 +134,6 @@ func (iu *invoiceUsecase) UpdateInvoice(invoice model.Invoice, invoiceId uuid.UU
 		return model.InvoiceResponse{}, err
 	}
 	if err := iu.ir.UpdateInvoice(context.Background(), &invoice, invoiceId); err != nil {
-		fmt.Println(err)
 		return model.InvoiceResponse{}, err
 	}
 

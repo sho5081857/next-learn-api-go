@@ -70,10 +70,3 @@ func NewDB() *bun.DB {
 	fmt.Println("Connected")
 	return db
 }
-
-func CloseDB(db *bun.DB) {
-	sqlDB := db.DB
-	if err := sqlDB.Close(); err != nil {
-		log.Fatalln(err)
-	}
-}

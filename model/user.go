@@ -32,7 +32,3 @@ type TokenResponse struct {
 	AccessToken string `json:"access_token"`
 	RefreshToken string `json:"refresh_token"`
 }
-
-type VerifyTokenResponse struct {
-	Valid bool `json:"valid"`
-}
