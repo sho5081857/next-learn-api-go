@@ -30,7 +30,7 @@ docker compose up -d
 ```bash
 task sql-create
 # or...
-docker-compose exec -T db bash -c 'PGPASSWORD=$POSTGRES_PASSWORD psql -U $POSTGRES_USER -d $POSTGRES_DB' < _tools/first.sql
+docker compose exec -T db bash -c 'PGPASSWORD=$POSTGRES_PASSWORD psql -U $POSTGRES_USER -d $POSTGRES_DB' < _tools/first.sql
 ```
 
 ## Start app
