@@ -3,75 +3,72 @@ package router
 import (
 	"net/http"
 	"next-learn-go/controller"
+	"next-learn-go/controller/middleware"
+	"next-learn-go/repository"
+	"next-learn-go/usecase"
+	"next-learn-go/validator"
 
-	"os"
-
-	echojwt "github.com/labstack/echo-jwt/v4"
 	"github.com/labstack/echo/v4"
-	"github.com/labstack/echo/v4/middleware"
+	"github.com/uptrace/bun"
 )
 
 func NewRouter(
-	uc controller.IUserController,
-	ic controller.IInvoiceController,
-	rc controller.IRevenueController,
-	cc controller.ICustomerController,
+	db *bun.DB,
 ) *echo.Echo {
 	e := echo.New()
-	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
-		AllowOrigins: []string{"http://localhost:3000", os.Getenv("FE_URL")},
-		AllowHeaders: []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept,
-			echo.HeaderAccessControlAllowHeaders},
-		AllowMethods:     []string{"GET", "PATCH", "POST", "DELETE"},
-		AllowCredentials: true,
-	}))
+	e.Use(middleware.CorsMiddleware())
+	jwtMiddleware := middleware.JwtMiddleware()
 
-	jwtMiddleware := echojwt.WithConfig(echojwt.Config{
-		SigningKey: []byte(os.Getenv("SECRET")),
-	})
+	userValidator := validator.NewUserValidator()
+	invoiceValidator := validator.NewInvoiceValidator()
+
+	userRepository := repository.NewUserRepository(db)
+	invoiceRepository := repository.NewInvoiceRepository(db)
+	revenueRepository := repository.NewRevenueRepository(db)
+	customerRepository := repository.NewCustomerRepository(db)
+
+	userUseCase := usecase.NewUserUseCase(userRepository, userValidator)
+	invoiceUseCase := usecase.NewInvoiceUseCase(invoiceRepository, invoiceValidator)
+	revenueUseCase := usecase.NewRevenueUseCase(revenueRepository)
+	customerUseCase := usecase.NewCustomerUseCase(customerRepository)
+
+	userController := controller.NewUserController(userUseCase)
+	invoiceController := controller.NewInvoiceController(invoiceUseCase)
+	revenueController := controller.NewRevenueController(revenueUseCase)
+	customerController := controller.NewCustomerController(customerUseCase)
 
 	e.GET("/", func(c echo.Context) error {
 		return c.String(http.StatusOK, "OK")
 	})
 
-	e.POST("/signup", uc.SignUp)
-	e.POST("/login", uc.LogIn)
-
-	tv := e.Group("/token/verify")
-	tv.Use(jwtMiddleware)
-	tv.POST("", func(c echo.Context) error {
-		return c.JSON(http.StatusOK, "OK")
-	})
-
-	tr := e.Group("/token/refresh")
-	tr.POST("", uc.RefreshToken)
-
+	e.POST("/register", userController.SignUp)
+	e.POST("/login", userController.LogIn)
 
 	i := e.Group("/invoices")
 	i.Use(jwtMiddleware)
-	i.GET("/latest", ic.GetLatestInvoices)
-	i.GET("/filtered", ic.GetFilteredInvoices)
-	i.GET("/count", ic.GetInvoiceCount)
-	i.GET("/statusCount", ic.GetInvoiceStatusCount)
-	i.GET("/pages", ic.GetInvoicesPages)
-	i.GET("/:invoiceId", ic.GetInvoiceById)
-	i.POST("", ic.CreateInvoice)
-	i.PATCH("/:invoiceId", ic.UpdateInvoice)
-	i.DELETE("/:invoiceId", ic.DeleteInvoice)
+	i.GET("/latest", invoiceController.GetLatestInvoices)
+	i.GET("/filtered", invoiceController.GetFilteredInvoices)
+	i.GET("/count", invoiceController.GetInvoiceCount)
+	i.GET("/status/count", invoiceController.GetInvoiceStatusCount)
+	i.GET("/pages", invoiceController.GetInvoicesPages)
+	i.GET("/:invoiceId", invoiceController.GetInvoiceById)
+	i.POST("", invoiceController.CreateInvoice)
+	i.PATCH("/:invoiceId", invoiceController.UpdateInvoice)
+	i.DELETE("/:invoiceId", invoiceController.DeleteInvoice)
 
 	r := e.Group("/revenues")
 	r.Use(jwtMiddleware)
-	r.GET("", rc.GetAllRevenues)
+	r.GET("", revenueController.GetAllRevenues)
 
 	c := e.Group("/customers")
 	c.Use(jwtMiddleware)
-	c.GET("", cc.GetAllCustomers)
-	c.GET("/filtered", cc.GetFilteredCustomers)
-	c.GET("/count", cc.GetCustomerCount)
+	c.GET("", customerController.GetAllCustomers)
+	c.GET("/filtered", customerController.GetFilteredCustomers)
+	c.GET("/count", customerController.GetCustomerCount)
 
 	u := e.Group("/user")
 	u.Use(jwtMiddleware)
-	u.GET("", uc.GetUserById)
-	u.GET("/email", uc.GetUserByEmail)
+	u.GET("", userController.GetUserById)
+	u.GET("/email", userController.GetUserByEmail)
 	return e
 }
