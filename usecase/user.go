@@ -82,9 +82,9 @@ func (uu *userUseCase) Login(user entity.User) (entity.LoginResponse, error) {
 	}
 
 	resLogin := entity.LoginResponse{
-		ID:           storedUser.ID,
-		Email:        storedUser.Email,
-		AccessToken:  tokenString,
+		ID:    storedUser.ID,
+		Email: storedUser.Email,
+		Token: tokenString,
 	}
 	return resLogin, nil
 }

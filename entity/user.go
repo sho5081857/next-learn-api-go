@@ -22,7 +22,7 @@ type UserResponse struct {
 }
 
 type LoginResponse struct {
-	ID          uuid.UUID `json:"id"`
-	Email       string    `json:"email"`
-	AccessToken string    `json:"access_token"`
+	ID    uuid.UUID `json:"id"`
+	Email string    `json:"email"`
+	Token string    `json:"token"`
 }
