@@ -2,14 +2,14 @@ package repository
 
 import (
 	"context"
-	"next-learn-go/model"
+	"next-learn-go/entity"
 
 	"github.com/uptrace/bun"
 )
 
-type ICustomerRepository interface {
-	GetAllCustomers(ctx context.Context, customers *[]model.Customer) error
-	GetFilteredCustomers(ctx context.Context, customers *[]model.Customer, filter string) error
+type CustomerRepository interface {
+	GetAllCustomers(ctx context.Context, customers *[]entity.Customer) error
+	GetFilteredCustomers(ctx context.Context, customers *[]entity.Customer, filter string) error
 	GetCustomerCount(ctx context.Context) (int, error)
 }
 
@@ -17,11 +17,11 @@ type customerRepository struct {
 	db *bun.DB
 }
 
-func NewCustomerRepository(db *bun.DB) ICustomerRepository {
+func NewCustomerRepository(db *bun.DB) CustomerRepository {
 	return &customerRepository{db}
 }
 
-func (cr *customerRepository) GetAllCustomers(ctx context.Context, customers *[]model.Customer) error {
+func (cr *customerRepository) GetAllCustomers(ctx context.Context, customers *[]entity.Customer) error {
 	if err := cr.db.NewSelect().
 		Model(customers).
 		Scan(ctx); err != nil {
@@ -30,7 +30,7 @@ func (cr *customerRepository) GetAllCustomers(ctx context.Context, customers *[]
 	return nil
 }
 
-func (cr *customerRepository) GetFilteredCustomers(ctx context.Context, customers *[]model.Customer, filter string) error {
+func (cr *customerRepository) GetFilteredCustomers(ctx context.Context, customers *[]entity.Customer, filter string) error {
 	query := "%" + filter + "%"
 	if err := cr.db.NewSelect().
 		Model(customers).
@@ -51,7 +51,7 @@ func (cr *customerRepository) GetFilteredCustomers(ctx context.Context, customer
 	return nil
 }
 func (cr *customerRepository) GetCustomerCount(ctx context.Context) (int, error) {
-	count, err := cr.db.NewSelect().Model((*model.Customer)(nil)).Count(ctx)
+	count, err := cr.db.NewSelect().Model((*entity.Customer)(nil)).Count(ctx)
 	if err != nil {
 		return 0, err
 	}

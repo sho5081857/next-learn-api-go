@@ -1,22 +1,22 @@
 package validator
 
 import (
-	"next-learn-go/model"
+	"next-learn-go/entity"
 
 	validation "github.com/go-ozzo/ozzo-validation/v4"
 )
 
-type IInvoiceValidator interface {
-	InvoiceValidate(invoice model.Invoice) error
+type InvoiceValidator interface {
+	InvoiceValidate(invoice entity.Invoice) error
 }
 
 type invoiceValidator struct{}
 
-func NewInvoiceValidator() IInvoiceValidator {
+func NewInvoiceValidator() InvoiceValidator {
 	return &invoiceValidator{}
 }
 
-func (tv *invoiceValidator) InvoiceValidate(invoice model.Invoice) error {
+func (tv *invoiceValidator) InvoiceValidate(invoice entity.Invoice) error {
 	return validation.ValidateStruct(&invoice,
 		validation.Field(
 			&invoice.CustomerId,

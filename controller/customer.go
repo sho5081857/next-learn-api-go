@@ -7,17 +7,17 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-type ICustomerController interface {
+type CustomerController interface {
 	GetAllCustomers(c echo.Context) error
 	GetFilteredCustomers(c echo.Context) error
 	GetCustomerCount(c echo.Context) error
 }
 
 type customerController struct {
-	cu usecase.ICustomerUsecase
+	cu usecase.CustomerUseCase
 }
 
-func NewCustomerController(cu usecase.ICustomerUsecase) ICustomerController {
+func NewCustomerController(cu usecase.CustomerUseCase) CustomerController {
 	return &customerController{cu}
 }
 

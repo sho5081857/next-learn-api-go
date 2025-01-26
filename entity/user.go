@@ -1,4 +1,4 @@
-package model
+package entity
 
 import (
 	"github.com/google/uuid"
@@ -22,13 +22,7 @@ type UserResponse struct {
 }
 
 type LoginResponse struct {
-	ID          uuid.UUID `json:"id"`
-	Email       string    `json:"email"`
-	AccessToken string    `json:"access_token"`
-	RefreshToken string    `json:"refresh_token"`
-}
-
-type TokenResponse struct {
-	AccessToken string `json:"access_token"`
-	RefreshToken string `json:"refresh_token"`
+	ID    uuid.UUID `json:"id"`
+	Email string    `json:"email"`
+	Token string    `json:"token"`
 }

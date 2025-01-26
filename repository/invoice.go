@@ -3,21 +3,21 @@ package repository
 import (
 	"context"
 	"fmt"
-	"next-learn-go/model"
+	"next-learn-go/entity"
 
 	"github.com/google/uuid"
 	"github.com/uptrace/bun"
 )
 
-type IInvoiceRepository interface {
-	GetLatestInvoices(ctx context.Context, invoices *[]model.Invoice, offset, limit int) error
-	GetFilteredInvoices(ctx context.Context, invoices *[]model.Invoice, query string, offset, limit int) error
+type InvoiceRepository interface {
+	GetLatestInvoices(ctx context.Context, invoices *[]entity.Invoice, offset, limit int) error
+	GetFilteredInvoices(ctx context.Context, invoices *[]entity.Invoice, query string, offset, limit int) error
 	GetInvoiceCount(ctx context.Context) (int, error)
 	GetInvoiceStatusCount(ctx context.Context) (int, int, error)
 	GetInvoicesPages(ctx context.Context, query string, offset, limit int) (int, error)
-	GetInvoiceById(ctx context.Context, invoice *model.Invoice, invoiceId uuid.UUID) error
-	CreateInvoice(ctx context.Context, invoice *model.Invoice) error
-	UpdateInvoice(ctx context.Context, invoice *model.Invoice, invoiceId uuid.UUID) error
+	GetInvoiceById(ctx context.Context, invoice *entity.Invoice, invoiceId uuid.UUID) error
+	CreateInvoice(ctx context.Context, invoice *entity.Invoice) error
+	UpdateInvoice(ctx context.Context, invoice *entity.Invoice, invoiceId uuid.UUID) error
 	DeleteInvoice(ctx context.Context, invoiceId uuid.UUID) error
 }
 
@@ -25,11 +25,11 @@ type invoiceRepository struct {
 	db *bun.DB
 }
 
-func NewInvoiceRepository(db *bun.DB) IInvoiceRepository {
+func NewInvoiceRepository(db *bun.DB) InvoiceRepository {
 	return &invoiceRepository{db}
 }
 
-func (ir *invoiceRepository) GetLatestInvoices(ctx context.Context, invoices *[]model.Invoice, offset, limit int) error {
+func (ir *invoiceRepository) GetLatestInvoices(ctx context.Context, invoices *[]entity.Invoice, offset, limit int) error {
 	if err := ir.db.NewSelect().
 		Model(invoices).
 		Relation("Customer").
@@ -43,7 +43,7 @@ func (ir *invoiceRepository) GetLatestInvoices(ctx context.Context, invoices *[]
 }
 
 func (ir *invoiceRepository) GetInvoiceCount(ctx context.Context) (int, error) {
-	count, err := ir.db.NewSelect().Model((*model.Invoice)(nil)).Count(ctx)
+	count, err := ir.db.NewSelect().Model((*entity.Invoice)(nil)).Count(ctx)
 	if err != nil {
 		return 0, err
 	}
@@ -51,11 +51,11 @@ func (ir *invoiceRepository) GetInvoiceCount(ctx context.Context) (int, error) {
 }
 
 func (ir *invoiceRepository) GetInvoiceStatusCount(ctx context.Context) (int, int, error) {
-	pending, err := ir.db.NewSelect().Model((*model.Invoice)(nil)).Where("status=?", "pending").Count(ctx)
+	pending, err := ir.db.NewSelect().Model((*entity.Invoice)(nil)).Where("status=?", "pending").Count(ctx)
 	if err != nil {
 		return 0, 0, err
 	}
-	paid, err := ir.db.NewSelect().Model((*model.Invoice)(nil)).Where("status=?", "paid").Count(ctx)
+	paid, err := ir.db.NewSelect().Model((*entity.Invoice)(nil)).Where("status=?", "paid").Count(ctx)
 	if err != nil {
 		return 0, 0, err
 	}
@@ -65,7 +65,7 @@ func (ir *invoiceRepository) GetInvoiceStatusCount(ctx context.Context) (int, in
 func (ir *invoiceRepository) GetInvoicesPages(ctx context.Context, query string, offset, limit int) (int, error) {
 	query = "%" + query + "%"
 	count, err := ir.db.NewSelect().
-		Model((*model.Invoice)(nil)).
+		Model((*entity.Invoice)(nil)).
 		Relation("Customer").
 		WhereGroup("AND", func(q *bun.SelectQuery) *bun.SelectQuery {
 			return q.WhereOr("Customer.name ILIKE ?", query).
@@ -81,7 +81,7 @@ func (ir *invoiceRepository) GetInvoicesPages(ctx context.Context, query string,
 	return count, nil
 }
 
-func (ir *invoiceRepository) GetFilteredInvoices(ctx context.Context, invoices *[]model.Invoice, query string, offset, limit int) error {
+func (ir *invoiceRepository) GetFilteredInvoices(ctx context.Context, invoices *[]entity.Invoice, query string, offset, limit int) error {
 	query = "%" + query + "%"
 	if err := ir.db.NewSelect().
 		Model(invoices).
@@ -102,7 +102,7 @@ func (ir *invoiceRepository) GetFilteredInvoices(ctx context.Context, invoices *
 	return nil
 }
 
-func (ir *invoiceRepository) GetInvoiceById(ctx context.Context, invoice *model.Invoice, invoiceId uuid.UUID) error {
+func (ir *invoiceRepository) GetInvoiceById(ctx context.Context, invoice *entity.Invoice, invoiceId uuid.UUID) error {
 	if err := ir.db.NewSelect().
 		Model(invoice).
 		Relation("Customer").
@@ -113,14 +113,14 @@ func (ir *invoiceRepository) GetInvoiceById(ctx context.Context, invoice *model.
 	return nil
 }
 
-func (ir *invoiceRepository) CreateInvoice(ctx context.Context, invoice *model.Invoice) error {
+func (ir *invoiceRepository) CreateInvoice(ctx context.Context, invoice *entity.Invoice) error {
 	if _, err := ir.db.NewInsert().Model(invoice).Exec(ctx); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (ir *invoiceRepository) UpdateInvoice(ctx context.Context, invoice *model.Invoice, invoiceId uuid.UUID) error {
+func (ir *invoiceRepository) UpdateInvoice(ctx context.Context, invoice *entity.Invoice, invoiceId uuid.UUID) error {
 	result, err := ir.db.NewUpdate().
 		Model(invoice).
 		Column("customer_id", "amount", "status").
@@ -141,7 +141,7 @@ func (ir *invoiceRepository) UpdateInvoice(ctx context.Context, invoice *model.I
 
 func (ir *invoiceRepository) DeleteInvoice(ctx context.Context, invoiceId uuid.UUID) error {
 	result, err := ir.db.NewDelete().
-		Model(&model.Invoice{}).
+		Model(&entity.Invoice{}).
 		Where("id=?", invoiceId).
 		Exec(ctx)
 	if err != nil {
