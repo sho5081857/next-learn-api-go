@@ -1,4 +1,4 @@
-package db
+package database
 
 import (
 	"context"
@@ -70,3 +70,4 @@ func NewDB() *bun.DB {
 	fmt.Println("Connected")
 	return db
 }
+
