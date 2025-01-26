@@ -1,23 +1,23 @@
 package validator
 
 import (
-	"next-learn-go/model"
+	"next-learn-go/entity"
 
 	validation "github.com/go-ozzo/ozzo-validation/v4"
 	"github.com/go-ozzo/ozzo-validation/v4/is"
 )
 
-type IUserValidator interface {
-	UserValidate(user model.User) error
+type UserValidator interface {
+	UserValidate(user entity.User) error
 }
 
 type userValidator struct{}
 
-func NewUserValidator() IUserValidator {
+func NewUserValidator() UserValidator {
 	return &userValidator{}
 }
 
-func (uv *userValidator) UserValidate(user model.User) error {
+func (uv *userValidator) UserValidate(user entity.User) error {
 	return validation.ValidateStruct(&user,
 		validation.Field(
 			&user.Email,
@@ -32,4 +32,3 @@ func (uv *userValidator) UserValidate(user model.User) error {
 		),
 	)
 }
-
