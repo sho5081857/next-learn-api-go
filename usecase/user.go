@@ -81,21 +81,10 @@ func (uu *userUseCase) Login(user entity.User) (entity.LoginResponse, error) {
 		return entity.LoginResponse{}, err
 	}
 
-	refreshToken := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"user_id": storedUser.ID,
-		"exp":     time.Now().Add(time.Hour * 24 * 7).Unix(),
-	})
-
-	refreshTokenString, err := refreshToken.SignedString([]byte(os.Getenv("SECRET")))
-	if err != nil {
-		return entity.LoginResponse{}, err
-	}
-
 	resLogin := entity.LoginResponse{
 		ID:           storedUser.ID,
 		Email:        storedUser.Email,
 		AccessToken:  tokenString,
-		RefreshToken: refreshTokenString,
 	}
 	return resLogin, nil
 }
