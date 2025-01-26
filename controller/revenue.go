@@ -7,15 +7,15 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-type IRevenueController interface {
+type RevenueController interface {
 	GetAllRevenues(c echo.Context) error
 }
 
 type revenueController struct {
-	ru usecase.IRevenueUsecase
+	ru usecase.RevenueUseCase
 }
 
-func NewRevenueController(ru usecase.IRevenueUsecase) IRevenueController {
+func NewRevenueController(ru usecase.RevenueUseCase) RevenueController {
 	return &revenueController{ru}
 }
 
